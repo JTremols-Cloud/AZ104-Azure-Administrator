@@ -8,7 +8,7 @@ This repository documents my hands-on Azure labs built around a fictional MSP en
 
 | Lab | Topic | Status |
 |-----|-------|--------|
-| [01](./01-identity-and-governance/) | Identity & Governance | ✅ Complete |
+| [01](./Lab01-Identity-and-Access-Management/) | Identity & Governance | ✅ Complete |
 | 02 | Storage & Backup | 🔜 Planned |
 | 03 | Networking & Connectivity | 🔜 Planned |
 | 04 | Compute & Virtual Machines | 🔜 Planned |
