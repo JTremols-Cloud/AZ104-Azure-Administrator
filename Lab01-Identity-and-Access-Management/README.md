@@ -221,4 +221,4 @@ az account management-group delete --name mg-clearview-core
 
 ---
 
-⬅️ [Back to main README](../README.md) | ➡️ Next: Lab 02 - Compute & Virtual Machines
+⬅️ [Back to main README](../README.md) | ➡️ Next: [Lab02 - Storage & Backup](/02-storage-and-backup/)
