@@ -1,198 +1,222 @@
-# Lab 01 – Identity and Access Management
+# Lab 01: Identity & Governance
 
-This lab marks the beginning of Tremols Tech’s Azure Cloud Foundation project. As an early‑stage MSP contracted by ClearView Dental Associates, a mid‑size dental organization with multiple clinics and 180 employees, Tremols Tech is responsible for modernizing their IT operations by migrating identity, governance, and core workloads into Microsoft Azure.
+> Part of the [AZ-104 Azure Administrator Journey](../README.md). ClearView Dental Associates and all names, accounts, and data are fictional. This lab is based on Microsoft's AZ-104 learning content and is not affiliated with Microsoft.
 
-Before compute, networking, storage, or clinical applications can be deployed, Tremols Tech must establish a secure identity and governance baseline. This lab implements the core identity, RBAC, subscription organization, and policy enforcement controls required for a production‑ready landing zone. Every workload ClearView Dental Associates migrates — VMs, storage, networking, analytics — will inherit the identity and governance controls established in this phase.
+**Exam domain:** Manage Azure identities and governance | **Outcome:** A secure identity and governance baseline that later resources inherit.
 
-###### This is Phase 1 of a hands-on scenario modeled on an MSP cloud adoption engagement.
+## Contents
 
-## 📘 Lab Overview
+1. [Business Scenario](#business-scenario)
+2. [Walkthrough](#walkthrough)
+3. [Results, Challenges & What I Learned](#results-challenges--what-i-learned)
+4. [Cleanup](#cleanup)
 
-ClearView Dental Associates is preparing to migrate practice management systems, imaging workloads, and clinic operations into Azure. Tremols Tech must first establish: 
+---
 
-- Clean and compliant identity structure
-- Role‑based access control aligned with least privilege
-- Management group hierarchy for subscription governance
-- Azure Policy enforcement for tagging, compliance, and resource hygiene
-- Resource protection to prevent accidental deletion
+## Business Scenario
 
-###### This lab walks through the exact steps MSPs take when onboarding healthcare organizations into Azure, especially those with HIPAA sensitive workloads. 
+Tremols Tech, an early-stage MSP, is onboarding **ClearView Dental Associates**, a dental group with multiple clinics and about 180 staff, into Microsoft Azure.
 
+Before any compute, networking, or storage is deployed, Tremols Tech needs a secure baseline: who can access what, how subscriptions are organized, how resources are governed, and how accidental deletion is prevented. Every workload ClearView migrates later (VMs, storage, networking, analytics) will inherit these controls, so mistakes made here compound over time.
 
+**What this lab covers**
 
-## 🔐 Part 1 - Identity: Users, Guests \& Groups
+- Entra ID users, guests, and groups
+- Management groups
+- RBAC and custom roles
+- Azure Policy
+- Tagging
+- Resource locks
 
-This section focuses on core identity objects in Microsoft Entra ID.
+**Prerequisites**
 
-### Scenario
+| Requirement | Details |
+|---|---|
+| Azure subscription | Pay-As-You-Go |
+| Entra ID role | Global Administrator |
+| Azure role | Owner on the subscription and management group |
+| Tools | Azure Portal (steps below), with PowerShell and CLI equivalents for reference |
 
-Tremols Tech is onboarding its internal cloud engineers and external dental software vendors into Azure so they can support ClearView Dental Associates during the migration.
+---
 
-### Tasks Completed
+## Walkthrough
 
-#### 1. Created Internal User Accounts
+All steps were performed in the **Azure Portal**. PowerShell and CLI equivalents are included where they apply. Screenshots are redacted of IDs and emails and stored in `./images/`.
 
-I added a new internal user representing a ClearView Regional Manager and configured identity metadata:
+### Part 1: Identity (Users, Guests & Groups)
 
-- Display name
-- Job title
-- Department
-- Usage location
+**Why:** Tremols Tech engineers and outside dental software vendors need identities before they can support the migration.
 
-###### This account represents the first wave of ClearView identities being migrated into Azure.
+**1. Created an internal user**
+- Added a user representing a ClearView Regional Manager and set display name, job title, department, and usage location (usage location is required before a license can be assigned).
 
-#### 2. Invited an External Guest User
+![Internal user](./images/01-internal-user.png)
 
-Invited an external imaging software consultant to simulate a B2B scenario. The guest appeared in Entra ID and received an email invitation.
+**2. Invited an external guest**
+- Invited an external imaging software consultant to simulate a B2B scenario. The guest appeared in Entra ID as a Guest user type and received an email invitation.
 
-#### 3. Created the "Tremols Tech - Engineering" Security Group
+![Guest user](./images/02-guest-user.png)
 
-I created a security group to centralize access for the Engineering department.
+**3. Created security groups** (assigned membership)
 
-- Assigned myself as owner
-- Added internal and external users
-- Reviewed static vs dynamic membership
+- **ClearView - Engineering:** I set myself as owner and added the internal user and the guest
+- **ClearView - Help Desk:** used for the role assignment in Part 2
 
-###### Dynamic membership requires P1/P2 licensing and is extremely useful for MSP environments. For this lab, assigned membership was used.
+> Dynamic membership requires Entra ID P1/P2 and suits MSP environments, for example `user.department -eq "Engineering"`. This lab used assigned membership.
 
+![Groups](./images/03-groups.png)
 
+### Part 2: Governance (Management Groups & RBAC)
 
-## 🏛 Part 2 - Governance: Management Groups & RBAC
+**Why:** ClearView wants consistent access control across subscriptions, so permissions are applied at the right scope instead of resource by resource.
 
-This section covers subscription organization and role‑based access control (RBAC).
+**1. Created a management group**
 
-### Scenario
+| Setting | Value |
+|---|---|
+| ID | `mg-clearview-core` (cannot be changed after creation) |
+| Display name | ClearView Dental - Core Governance |
 
-ClearView Dental Associates wants consistent access control and governance across all Azure subscriptions. Tremols Tech must implement a management group hierarchy and apply RBAC at the correct scope to support future clinical workloads, imaging systems, and patient data applications.
+Management groups give centralized RBAC, centralized Azure Policy, and inheritance to subscriptions beneath them.
+> I moved my Pay-As-You-Go subscription under this group so assignments and policies apply to it.
 
-### Tasks Completed
+<details>
+<summary>PowerShell / CLI equivalent</summary>
 
-#### 1. Created a Management Group
-
-I created a management group (clearview-mg-core) named "ClearView Dental - Core Governance" to organize subscriptions under a centralized governance boundary for all current and future Azure workloads.
-
-Management groups enable:
-- Centralized RBAC
-- Centralized Azure Policy
-- Subscription inheritance
-- Directory‑level governance
-
-#### 2. Assigned a Built-in Role
-
-I assigned the Virtual Machine Contributor role to the Tremols Tech Engineering group at the management group scope.
-
-This role allows VM management without OS access or network/storage configuration, which is ideal for engineering and support teams working with dental clinics.
-
-#### 3. Created a Custom RBAC Role
-
-I cloned the Support Request Contributor role and removed unnecessary permissions to enforce least privilege.
-
-Custom role included:
-- Actions for support ticket creation
-- NotActions to block provider registration
-- Assignable scope limited to the management group
-
-#### 4. Monitored Role Assignments
-
-I used the Activity Log to confirm role creation and assignment events, which is essential for MSP auditing and compliance.
-
-
-
-## 🛡 Part 3 - Governance Enforcement: Azure Policy, Tagging & Locks
-
-This section enforces governance using Azure Policy, tagging, and resource locks.
-
-### Scenario
-
-During an internal audit, Tremols Tech discovered resources missing ownership, project, and cost center metadata. For a dental organization with strict compliance requirements, consistent tagging is essential for cost visibility, automation, and HIPAA aligned governance.
-
-### Tasks Completed
-
-#### 1. Applied Tags to a Resource Group
-
-I created a new resource group (clearview-rg-governance) and applied a CostCenter: 000 tag.
-
-Tags help with:
-- Cost management
-- Ownership tracking
-- Automation
-- Reporting
-
-#### 2. Enforced Tagging with Azure Policy
-
-I assigned a built‑in policy requiring the CostCenter tag on all resources in the resource group.
-Attempting to create a storage account without the tag resulted in a policy violation, which confirms enforcement.
-
-#### 3. Applied Tag Inheritance via Azure Policy
-
-I replaced the enforcement policy with a Modify policy that automatically applies the CostCenter tag to child resources.
-
-This required:
-- A remediation task
-- A managed identity
-
-###### Creating a new storage account showed the tag automatically applied.
-
-#### 4. Configured Resource Locks
-- Applied a Delete lock to the governance resource group.
-- Attempting to delete the group resulted in a lock violation, confirming protection.
-- Locks apply regardless of role, so even Owners must remove the lock first.
-
-
-
-## 📝 Notes & Observations
-
-- Management groups are essential for MSP‑style subscription organization.
-- RBAC roles should always be assigned to groups, not individuals.
-- Custom roles help enforce least privilege.
-- RBAC controls who can act, Policy controls what can be deployed, and locks prevent accidental changes or deletion.
-- Tagging is critical for cost management, automation, and operational clarity.
-- Remediation tasks bring existing resources into compliance.
-- Locks apply regardless of role, so even Owners must remove the lock before deleting.
-- Identity and governance mistakes compound over time, establishing a clean baseline in Phase 1 prevents costly rework in later phases.
-
-
-
-## 🎯 Why This Lab Matters
-
-Identity and governance are the backbone of Azure.
-
-This lab establishes Tremols Tech’s operational foundation for ClearView Dental Associates:
-- Who can access what
-- How subscriptions are organized
-- How resources are governed
-- How metadata is enforced
-- How accidental deletion is prevented
-
-###### Everything else (compute, networking, storage, analytics) depends on this layer being clean, secure, and well structured.
-
-
-## 🧹 Cleanup
-
-To remove lab resources:
-Portal
-
-* Delete the resource group
-* Delete the management group
-* Remove policy assignments
-
-### PowerShell
 ```powershell
-Remove-AzResourceGroup -Name rg-clearview-governance
+New-AzManagementGroup -GroupName mg-clearview-core -DisplayName "ClearView Dental - Core Governance"
+```
+
+```bash
+az account management-group create --name mg-clearview-core --display-name "ClearView Dental - Core Governance"
+```
+</details>
+
+**2. Assigned a built-in role**
+- Assigned **Virtual Machine Contributor** to the Help Desk group at the management group scope. It allows VM management without guest OS access or network and storage configuration, which fits MSP support work.
+
+> This scope covers every current and future subscription under the group. That is fine for a lab. In production I would scope it to a subscription or resource group.
+
+**3. Created a custom role**
+- Cloned **Support Request Contributor** and trimmed it for least privilege.
+
+| Setting | Value |
+|---|---|
+| Role name | ClearView Support Request Contributor |
+| Actions | Create and manage support tickets |
+| NotActions | `Microsoft.Support/register/action` (blocks provider registration) |
+| Assignable scope | `mg-clearview-core` |
+
+**4. Reviewed role activity**
+- Used the **Activity Log** to confirm the role definition and assignment events, which is the audit trail an MSP needs for compliance reviews.
+
+![Activity log](./images/04-activity-log.png)
+
+### Part 3: Governance Enforcement (Policy, Tags & Locks)
+
+**Why:** An internal audit found resources with no owner, project, or cost center metadata. Consistent tagging supports cost visibility, automation, and HIPAA-aligned governance practices.
+
+**1. Tagged a resource group**
+- Created `rg-clearview-governance` with the tag `CostCenter: 000`. CostCenter was the pilot tag; a full rollout would also enforce Owner and Project.
+
+<details>
+<summary>PowerShell / CLI equivalent</summary>
+
+```powershell
+New-AzResourceGroup -Name rg-clearview-governance -Location EastUS -Tag @{ CostCenter = "000" }
+```
+
+```bash
+az group create --name rg-clearview-governance --location EastUS --tags CostCenter=000
+```
+</details>
+
+**2. Enforced tagging (Deny)**
+- Assigned the built-in policy **Require a tag and its value on resources** to the resource group. Creating a storage account without the tag failed with a policy violation.
+
+![Policy violation](./images/05-policy-deny.png)
+
+**3. Inherited tags automatically (Modify)**
+- Removed the Deny assignment so the policies would not conflict, then assigned **Inherit a tag from the resource group if missing** with a system-assigned managed identity. The portal granted that identity the **Contributor** role on the resource group. The new storage account (`storageclearviewtest001`) was not tagged at creation, so I ran a remediation task, and after it completed the `CostCenter: 000` tag appeared.
+
+![Tag inherited](./images/06-tag-inherited.png)
+
+**4. Applied a resource lock**
+- Added a **Delete** lock to the resource group. Deleting the group failed with a lock error.
+
+![Lock error](./images/07-lock-error.png)
+
+<details>
+<summary>PowerShell / CLI equivalent</summary>
+
+```powershell
+New-AzResourceLock -LockName DeleteLock -LockLevel CanNotDelete -ResourceGroupName rg-clearview-governance
+```
+
+```bash
+az lock create --name DeleteLock --lock-type CanNotDelete --resource-group rg-clearview-governance
+```
+</details>
+
+---
+
+## Results, Challenges & What I Learned
+
+**Results**
+
+- Internal user, guest user, and two security groups created in Entra ID
+- Management group created, with the subscription moved under it and Virtual Machine Contributor assigned to the Help Desk group
+- Custom role built from a clone of a built-in role
+- Deny policy enforced tagging, then a Modify policy with a remediation task automated it
+- Delete lock blocked removal of the governance resource group
+
+**Challenges**
+
+- The Modify policy did not tag the new storage account at creation. I confirmed the assignment scope, the `CostCenter` parameter, and the managed identity's Contributor role, then ran a remediation task
+- The remediation task stayed on "Evaluating" for several minutes before it applied the tag
+- Policy assignments can take up to ~30 minutes to take effect, so testing too early gives misleading results
+- The Delete lock blocks cleanup, so it has to be removed first
+- I deleted the management group before finishing the lab, so I recreated it, moved the subscription back under it, and reassigned the Virtual Machine Contributor role and custom role scope
+
+**What I learned**
+
+- Assign roles to groups, not individuals
+- RBAC controls *who* can act. Policy controls *what state* resources may be in. Locks protect against deletion or change regardless of role
+- Even an Owner cannot delete a locked resource until the lock is removed, and only Owners and User Access Administrators can remove it
+- Tagging is the foundation for cost management and automation
+- **MSP lens:** in production I would manage customer tenants with Azure Lighthouse instead of guest accounts, require MFA and Conditional Access for admins, and use PIM for just-in-time elevation. Governance tooling supports HIPAA-aligned practices but does not make an environment compliant by itself; a BAA with Microsoft is a separate requirement
+
+---
+
+## Cleanup
+
+Remove the lock **first**, or the resource group deletion will fail. The management group can only be deleted once it has no subscriptions or child groups.
+
+**Portal**
+
+1. Remove the Delete lock on `rg-clearview-governance`
+2. Delete the resource group
+3. Remove the policy assignments
+4. Remove role assignments and delete the custom role
+5. Move any subscriptions out of the management group, then delete it
+6. Delete the test user, guest user, and security groups
+
+**PowerShell**
+
+```powershell
+Get-AzResourceLock -ResourceGroupName rg-clearview-governance | Remove-AzResourceLock -Force
+Remove-AzResourceGroup -Name rg-clearview-governance -Force
 Remove-AzManagementGroup -GroupName mg-clearview-core
 ```
 
-### CLI
+**Azure CLI**
+
 ```bash
-az group delete --name rg-clearview-governance
+az lock delete --name DeleteLock --resource-group rg-clearview-governance
+az group delete --name rg-clearview-governance --yes
 az account management-group delete --name mg-clearview-core
 ```
 
-###### This completes Phase 1 of Tremols Tech’s MSP cloud adoption project.
+---
 
-
-
-## 📈 Next Lab
-
-➡️ Lab 02 - Compute & Virtual Machines
-
+⬅️ [Back to main README](../README.md) | ➡️ Next: Lab 02 - Compute & Virtual Machines
