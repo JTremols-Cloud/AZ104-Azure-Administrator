@@ -107,10 +107,12 @@ az account management-group create --name mg-clearview-core --display-name "Clea
 | NotActions | `Microsoft.Support/register/action` (blocks provider registration) |
 | Assignable scope | `mg-clearview-core` |
 
+![Activity log](./images/04-custom-role.png)
+
 **4. Reviewed role activity**
 - Used the **Activity Log** to confirm the role definition and assignment events, which is the audit trail an MSP needs for compliance reviews.
 
-![Activity log](./images/04-activity-log.png)
+![Activity log](./images/05-activity-log.png)
 
 ### Part 3: Governance Enforcement (Policy, Tags & Locks)
 
@@ -134,17 +136,17 @@ az group create --name rg-clearview-governance --location EastUS --tags CostCent
 **2. Enforced tagging (Deny)**
 - Assigned the built-in policy **Require a tag and its value on resources** to the resource group. Creating a storage account without the tag failed with a policy violation.
 
-![Policy violation](./images/05-policy-deny.png)
+![Policy violation](./images/06-policy-deny.png)
 
 **3. Inherited tags automatically (Modify)**
 - Removed the Deny assignment so the policies would not conflict, then assigned **Inherit a tag from the resource group if missing** with a system-assigned managed identity. The portal granted that identity the **Contributor** role on the resource group. The new storage account (`storageclearviewtest001`) was not tagged at creation, so I ran a remediation task, and after it completed the `CostCenter: 000` tag appeared.
 
-![Tag inherited](./images/06-tag-inherited.png)
+![Tag inherited](./images/07-tag-inherited.png)
 
 **4. Applied a resource lock**
 - Added a **Delete** lock to the resource group. Deleting the group failed with a lock error.
 
-![Lock error](./images/07-lock-error.png)
+![Lock error](./images/08-lock-error.png)
 
 <details>
 <summary>PowerShell / CLI equivalent</summary>
