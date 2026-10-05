@@ -9,7 +9,7 @@ This repository documents my hands-on Azure labs built around a fictional MSP en
 | Lab | Topic | Status |
 |-----|-------|--------|
 | [01](./Lab01-Identity-and-Access-Management/) | Identity & Governance | ✅ Complete |
-| [02](./Lab02-Storage-and-Backup/) | Storage & Backup | 🔜 In-Progress |
+| [02](./Lab02-Storage-and-Backup/) | Storage & Backup | 🚧 In-Progress |
 | [03](./Lab03-Networking-and-Connectivity/) | Networking & Connectivity | 🔜 Planned |
 | [04](./Lab04-Compute-and-Virtual-Machines/) | Compute & Virtual Machines | 🔜 Planned |
 | [05](./Lab05-Monitoring-and-Analytics/) | Monitoring & Analytics | 🔜 Planned |
