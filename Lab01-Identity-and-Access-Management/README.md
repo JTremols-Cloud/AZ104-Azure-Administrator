@@ -28,6 +28,12 @@ Before any compute, networking, or storage is deployed, Tremols Tech needs a sec
 - Tagging
 - Resource locks
 
+**Architecture**
+
+![Lab 01 architecture diagram](./images/00-architecture.png)
+
+> Management group hierarchy, RBAC scope, and policy/lock boundaries for ClearView Dental
+
 **Prerequisites**
 
 | Requirement | Details |
