@@ -37,4 +37,13 @@ This lab builds on the [Lab 01](../01-identity-and-governance/) baseline: resour
 - Recovery Services vaults and Azure Backup
 - Azure Site Recovery (VM replication)
 
-# In-progress and actively working on it
+**Prerequisites**
+
+| Requirement | Details |
+|---|---|
+| Azure subscription | Pay-As-You-Go |
+| Azure role | Owner on the subscription |
+| Tools | Azure Portal, with CLI equivalents for reference |
+| Lab files | VM template and parameters from Microsoft's AZ-104 learn path |
+
+# 🚧 In-progress and actively working on it
