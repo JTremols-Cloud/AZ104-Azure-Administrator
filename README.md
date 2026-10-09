@@ -58,6 +58,6 @@ By completing this project I will:
 
 Built by **Charles Tremols** while working toward the AZ-104 certification.
 - 💼 [LinkedIn: Charles Tremols](https://www.linkedin.com/in/charles-tremols/)
-- 📧 [cjtremols@gmail.com](mailto:cjtremols@gmail.com)
+- 📧 [cjtremols@proton.me](mailto:cjtremols@proton.me)
 
 ###### This is a personal study project and is not affiliated with Microsoft.
