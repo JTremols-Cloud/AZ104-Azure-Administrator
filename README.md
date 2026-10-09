@@ -12,7 +12,7 @@ This repository documents my hands-on Azure labs built around a fictional MSP en
 | [02](./Lab02-Storage-and-Backup/) | Storage & Backup | 🚧 In-Progress |
 | [03](./Lab03-Networking-and-Connectivity/) | Networking & Connectivity | 🔜 Planned |
 | [04](./Lab04-Compute-and-Virtual-Machines/) | Compute & Virtual Machines | 🔜 Planned |
-| [05](./Lab05-Analytics-and-Logs/) | Monitoring & Analytics | 🔜 Planned |
+| [05](./Lab05-Analytics-and-Logs/) | Analytics & Logs | 🔜 Planned |
 
 ## ☁️ What each lab covers
 
